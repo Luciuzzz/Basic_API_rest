@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\admin;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 
 class AdminController extends Controller
@@ -15,20 +18,49 @@ class AdminController extends Controller
     }
 
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'user_admin' => 'required|string|max:255',
-            'pass_admin' => 'required|string|min:8',
-            'tel_admin' => 'required|string|max:20',
-            'ci_admin' => 'required|string|max:50|unique:admins,ci_admin'
+        $data = $request->only([
+            'user_admin',
+            'pass_admin',
+            'tel_admin',
+            'ci_admin',
         ]);
 
-        $data['pass_admin'] = $this->encryptWithRsa($data['pass_admin']);
+        $data['user_admin'] = $data['user_admin'] ?? null;
+        $data['pass_admin'] = $data['pass_admin'] ?? null;
+        $data['tel_admin'] = $data['tel_admin'] ?? null;
+        $data['ci_admin'] = $data['ci_admin'] ?? null;
+
+        if (!$data['user_admin']) return response()->json('User es obligatorio', 422);
+
+        if (!$data['pass_admin']) return response()->json('Password es obligatorio', 422);
+
+        if (strlen($data['pass_admin']) < 8) return response()->json('Password debe tener al menos 8 caracteres', 422);
+
+        if (!$data['tel_admin']) return response()->json('Telefono es obligatorio', 422);
+
+        if (!$data['ci_admin']) return response()->json('CI es obligatorio', 422);
+
+        // if (admin::where('ci_admin', (string) $data['ci_admin'])->exists()) return response()->json('CI ya registrado', 422);
+
+        $data['user_admin'] = (string) $data['user_admin'];
+        $data['pass_admin'] = Hash::make((string) $data['pass_admin']);
+        $data['tel_admin'] = (string) $data['tel_admin'];
+        $data['ci_admin'] = (string) $data['ci_admin'];
+
+
+
+        Log::warning('Admin creado', [
+            'ci_admin' => $data['ci_admin'],
+        ]);
 
         $admin = admin::create($data);
 
-        return response()->json($admin, 201);
+        return response()->json([
+            'message' => 'Admin creado correctamente',
+            'data' => $admin,
+        ], 201);
     }
 
     /**

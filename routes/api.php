@@ -6,6 +6,10 @@ use App\Http\Controllers\AdminController;
 
 Route::apiResource('admins', AdminController::class);
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::prefix('admins')->group(function () {
+//         Route::post('/', [AdminController::class, 'store']);
+//     });
+
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');

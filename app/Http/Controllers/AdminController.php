@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\admin;
+use App\Models\Admin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use RuntimeException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,9 +13,49 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return response()->json(admin::all());
+        return response()->json(Admin::all());
     }
 
+    public function login(Request $request): JsonResponse
+    {
+        $data = $request->only([
+            'user_admin',
+            'pass_admin',
+        ]);
+
+        $data['user_admin'] = $data['user_admin'] ?? null;
+        $data['pass_admin'] = $data['pass_admin'] ?? null;
+
+        if (!$data['user_admin']) return response()->json('User es obligatorio', 422);
+
+        if (!$data['pass_admin']) return response()->json('Password es obligatorio', 422);
+
+        $admin = Admin::where('user_admin', (string) $data['user_admin'])->first();
+
+        if (!$admin || !Hash::check((string) $data['pass_admin'], $admin->pass_admin)) {
+            return response()->json('Credenciales incorrectas', 401);
+        }
+
+        $request->session()->regenerate();
+        $request->session()->put([
+            'admin_id' => $admin->id,
+            'admin_user' => $admin->user_admin,
+        ]);
+
+        return response()->json([
+            'message' => 'Inicio de sesion correcto',
+            'data' => $admin,
+            'session_id' => $request->session()->getId(),
+        ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json('Sesion cerrada correctamente');
+    }
 
     public function store(Request $request): JsonResponse
     {
@@ -42,7 +81,7 @@ class AdminController extends Controller
 
         if (!$data['ci_admin']) return response()->json('CI es obligatorio', 422);
 
-        // if (admin::where('ci_admin', (string) $data['ci_admin'])->exists()) return response()->json('CI ya registrado', 422);
+        // if (Admin::where('ci_admin', (string) $data['ci_admin'])->exists()) return response()->json('CI ya registrado', 422);
 
         $data['user_admin'] = (string) $data['user_admin'];
         $data['pass_admin'] = Hash::make((string) $data['pass_admin']);
@@ -55,7 +94,7 @@ class AdminController extends Controller
             'ci_admin' => $data['ci_admin'],
         ]);
 
-        $admin = admin::create($data);
+        $admin = Admin::create($data);
 
         return response()->json([
             'message' => 'Admin creado correctamente',
@@ -66,7 +105,7 @@ class AdminController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(admin $admin)
+    public function show(Admin $admin)
     {
         return response()->json($admin);
     }
@@ -74,7 +113,7 @@ class AdminController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, admin $admin)
+    public function update(Request $request, Admin $admin)
     {
         $data = $request->validate([
             'user_admin' => 'sometimes|required|string|max:255',
@@ -84,7 +123,7 @@ class AdminController extends Controller
         ]);
 
         if (isset($data['pass_admin'])) {
-            $data['pass_admin'] = $this->encryptWithRsa($data['pass_admin']);
+            $data['pass_admin'] = Hash::make($data['pass_admin']);
         }
 
         $admin->update($data);
@@ -98,31 +137,12 @@ class AdminController extends Controller
      */
     public function destroy($id)
     {
-        $admin = admin::findOrFail($id);
+        $admin = Admin::findOrFail($id);
 
         $admin->delete();
 
         return response()->json([
             'message' => 'Eliminado correctamente'
         ]);
-    }
-
-    private function encryptWithRsa(string $value): string
-    {
-        $publicKeyPath = storage_path('app/private/rsa_public.pem');
-
-        if (! file_exists($publicKeyPath)) {
-            throw new RuntimeException('No se encontro la llave publica');
-        }
-
-        $publicKey = file_get_contents($publicKeyPath);
-
-        $encrypted = '';
-
-        if (! openssl_public_encrypt($value, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING)) {
-            throw new RuntimeException('No se pudo cifrar');
-        }
-
-        return base64_encode($encrypted);
     }
 }

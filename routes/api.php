@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AreaController;
+use App\Http\Controllers\AutorController;
+use App\Http\Controllers\CarreraController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Session\Middleware\StartSession;
@@ -19,6 +22,14 @@ Route::middleware([
     Route::apiResource('admins', AdminController::class)
         ->only(['store', 'update', 'destroy'])
         ->middleware('admin.session');
+
+    Route::middleware('admin.session')->group(function () {
+        Route::apiResource('areas', AreaController::class);
+        Route::apiResource('autores', AutorController::class)->parameters([
+            'autores' => 'autor',
+        ]);
+        Route::apiResource('carreras', CarreraController::class);
+    });
 });
 
 // Route::prefix('admins')->group(function () {

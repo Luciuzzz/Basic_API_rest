@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\AutorController;
 use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\TesisController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Session\Middleware\StartSession;
@@ -29,6 +30,10 @@ Route::middleware([
             'autores' => 'autor',
         ]);
         Route::apiResource('carreras', CarreraController::class);
+        Route::get('tesis/buscar', [TesisController::class, 'search']);
+        Route::apiResource('tesis', TesisController::class)->parameters([
+            'tesis' => 'tesis',
+        ]);
     });
 });
 

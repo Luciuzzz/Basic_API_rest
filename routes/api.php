@@ -24,14 +24,20 @@ Route::middleware([
         ->only(['store', 'update', 'destroy'])
         ->middleware('admin.session');
 
+    Route::get('tesis/buscar', [TesisController::class, 'search']);
+    Route::apiResource('tesis', TesisController::class)->only(['index', 'show'])->parameters([
+        'tesis' => 'tesis',
+    ]);
+    Route::apiResource('areas', AreaController::class)->only(['index', 'show']);
+    Route::apiResource('carreras', CarreraController::class)->only(['index', 'show']);
+
     Route::middleware('admin.session')->group(function () {
-        Route::apiResource('areas', AreaController::class);
+        Route::apiResource('areas', AreaController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('autores', AutorController::class)->parameters([
             'autores' => 'autor',
         ]);
-        Route::apiResource('carreras', CarreraController::class);
-        Route::get('tesis/buscar', [TesisController::class, 'search']);
-        Route::apiResource('tesis', TesisController::class)->parameters([
+        Route::apiResource('carreras', CarreraController::class)->only(['store', 'update', 'destroy']);
+        Route::apiResource('tesis', TesisController::class)->only(['store', 'update', 'destroy'])->parameters([
             'tesis' => 'tesis',
         ]);
     });

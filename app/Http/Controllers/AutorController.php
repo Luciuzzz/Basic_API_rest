@@ -22,7 +22,7 @@ class AutorController extends Controller
             'apellido' => 'required|string|max:100',
             'email' => 'required|email|max:150|unique:autores,email',
             'telefono' => 'required|string|max:20',
-        ]);
+        ], $this->validationMessages());
 
         $autor = Autor::create($data);
 
@@ -50,7 +50,7 @@ class AutorController extends Controller
                 Rule::unique('autores', 'email')->ignore($autor->id_autor, 'id_autor'),
             ],
             'telefono' => 'sometimes|required|string|max:20',
-        ]);
+        ], $this->validationMessages());
 
         $autor->update($data);
 

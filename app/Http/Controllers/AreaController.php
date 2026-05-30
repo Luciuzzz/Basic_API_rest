@@ -19,7 +19,7 @@ class AreaController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:100',
             'descripcion' => 'required|string|max:255',
-        ]);
+        ], $this->validationMessages());
 
         $area = Area::create($data);
 
@@ -39,7 +39,7 @@ class AreaController extends Controller
         $data = $request->validate([
             'nombre' => 'sometimes|required|string|max:100',
             'descripcion' => 'sometimes|required|string|max:255',
-        ]);
+        ], $this->validationMessages());
 
         $area->update($data);
 

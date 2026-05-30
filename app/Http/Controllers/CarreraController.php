@@ -20,7 +20,7 @@ class CarreraController extends Controller
             'nombre' => 'required|string|max:150',
             'facultad' => 'required|string|max:150',
             'duracion_semestres' => 'required|integer|min:1',
-        ]);
+        ], $this->validationMessages());
 
         $carrera = Carrera::create($data);
 
@@ -41,7 +41,7 @@ class CarreraController extends Controller
             'nombre' => 'sometimes|required|string|max:150',
             'facultad' => 'sometimes|required|string|max:150',
             'duracion_semestres' => 'sometimes|required|integer|min:1',
-        ]);
+        ], $this->validationMessages());
 
         $carrera->update($data);
 

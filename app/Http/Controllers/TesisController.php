@@ -19,7 +19,7 @@ class TesisController extends Controller
             'search' => 'nullable|string|max:255',
             'id_area' => 'nullable|integer|exists:areas,id_area',
             'id_carrera' => 'nullable|integer|exists:carreras,id_carrera',
-        ]);
+        ], $this->validationMessages());
 
         $query = Tesis::with(['autor', 'area', 'carrera']);
 
@@ -57,7 +57,7 @@ class TesisController extends Controller
             'id_autor' => 'required|integer|exists:autores,id_autor',
             'id_area' => 'required|integer|exists:areas,id_area',
             'id_carrera' => 'required|integer|exists:carreras,id_carrera',
-        ]);
+        ], $this->validationMessages());
 
         $data['fecha_creacion'] = now()->toDateString();
 
@@ -83,7 +83,7 @@ class TesisController extends Controller
             'id_autor' => 'sometimes|required|integer|exists:autores,id_autor',
             'id_area' => 'sometimes|required|integer|exists:areas,id_area',
             'id_carrera' => 'sometimes|required|integer|exists:carreras,id_carrera',
-        ]);
+        ], $this->validationMessages());
 
         $tesis->update($data);
 
